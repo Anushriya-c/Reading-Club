@@ -1,17 +1,17 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const BreadCrumb = ({crumbData}) => {
+const BreadCrumb = ({ crumbData }) => {
   return (
     <div>
-      <div class=" py-1">
+      <div className="py-1 font-extrabold">
         <nav>
-          <ul class="flex m-0 items-center p-0">
+          <ul className="flex m-0 items-center p-0 ">
             {crumbData.map((e) => {
               return (
-                <li class="flex items-center text-left">
+                <li className="flex items-center text-left font">
                   <svg
-                    class="block h-5 w-5 align-middle text-gray-950"
+                    className="block h-5 w-5 align-middle text-gray-950 font-extrabold"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="currentColor"
                     viewBox="0 0 20 20"
@@ -24,14 +24,13 @@ const BreadCrumb = ({crumbData}) => {
                     to={e.path}
                     href="#"
                     title=""
-                    class="cursor-pointer text-sm font-normal leading-5 text-gray-600 hover:text-gray-950"
+                    className="cursor-pointer text-sm leading-5 hover:text-gray-950 font-bold text-purple-700"
                   >
                     {e.name}
                   </Link>
                 </li>
               );
             })}
-
           </ul>
         </nav>
       </div>

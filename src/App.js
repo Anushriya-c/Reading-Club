@@ -24,6 +24,9 @@ import Teachersession from "./teacherpanel/Teachersession";
 import AdminBatchCreate from "./admindashboard/AdminBatchCreate";
 import StudentSession from "./StudentPanel/StudentSession";
 import StudentBatch from "./StudentPanel/StudentBatch";
+import StudentData from "./teacherpanel/StudentData";
+import CreateSession from "./teacherpanel/CreateSession";
+import NotFound from "./pages/NotFound";
 
 function App() {
   const action = useNavigationType();
@@ -80,11 +83,16 @@ function App() {
       <Route path="/adminschoolregistration" element={<AdminSchoolReg />} />
       <Route path="/adminschoolmanage" element={<AdminSchoolMng />} />
       <Route path="/adminbatchcreate" element={<AdminBatchCreate />} />
+      <Route path="/createSession/:batchid" element={<CreateSession />} />
+      <Route path="/studentdata" element={<StudentData />} />
       <Route path="/adminprofilesetting" element={<AdminProfileSetting />} />
       <Route path="/adminschooledit/:id" element={<AdminSchoolEdit />} />
       <Route path="/adminbatchedit" element={<AdminBatchEdit />} />
-      <Route path="/teachersession" element={<Teachersession />} />
+      <Route path="/teachersession/:batchid" element={<Teachersession />} />
+      <Route path="/notfound" element={<NotFound />} />
       <Route path="/signin" element={Admin ? <AdminHome /> : <SignIn />} />
+      <Route path="/signin" element={Student ? <StudentBatch /> : <SignIn />} />
+      <Route path="/signin" element={Teacher ? <Teacherlevel /> : <SignIn />} />
       <Route
         path="/studentbatch"
         element={Student ? <StudentBatch /> : <SignIn />}

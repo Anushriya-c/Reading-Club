@@ -1,9 +1,46 @@
-import React from "react";
+import React, { useState } from "react";
 import BreadCrumb from "../components/BreadCrumb";
 import Header from "../components/Header";
 import { Link } from "react-router-dom";
+import { BsUpload } from "react-icons/bs";
 
 const StudentSession = () => {
+  const [fileUpload, setFileUpload] = useState(null);
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type === "application/pdf") {
+      setFileUpload(file);
+    } else {
+      alert("Please upload a valid PDF file.");
+    }
+  };
+
+  const handleUpload = () => {
+    if (fileUpload) {
+      // Perform the upload or process the file here
+      console.log("Uploading:", fileUpload);
+
+      // Example: Using FormData to send the file to a server
+      const formData = new FormData();
+      formData.append("file", fileUpload);
+
+      // Replace with your upload logic
+      fetch("/upload-endpoint", {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("File uploaded successfully:", data);
+        })
+        .catch((error) => {
+          console.error("Error uploading file:", error);
+        });
+    } else {
+      alert("No file selected. Please select a PDF file to upload.");
+    }
+  };
   return (
     <div>
       <Header highlight={"studpanel"} />
@@ -17,14 +54,15 @@ const StudentSession = () => {
         <table className="w-full border-2 border-violet-600 rounded-md">
           <thead>
             <tr className="bg-violet-600 text-left text-xs font-semibold uppercase tracking-widest text-white">
-              <th className="px-5 py-3">Batch Id</th>
-              <th className="px-5 py-3">Session Date</th>
-              <th className="px-5 py-3">Are Files Allowed</th>
-              <th className="px-5 py-3">Files Upload Allowed</th>
-              <th className="px-5 py-3">No. of File Allowed</th>
+              <th className="px-5 py-3">Session Id</th>
+              <th className="px-5 py-3">Session Date/Time</th>
+              <th className="px-5 py-3">Updated Question Paper</th>
+              <th className="px-5 py-3">Upload Button</th>
+              <th className="px-5 py-3">URL Link</th>
             </tr>
           </thead>
           <tbody className="text-gray-500">
+            {/* First Session */}
             <tr>
               <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
                 <p className="whitespace-no-wrap">31212</p>
@@ -32,177 +70,66 @@ const StudentSession = () => {
               <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
                 <div className="flex items-center">
                   <p className="whitespace-no-wrap">
-                    Golden Hills Preparatory School
+                    25th May 2024/16:00 to 18:00
                   </p>
                 </div>
               </td>
               <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                <p className="whitespace-no-wrap">B 8/65, Rohini, Delhi</p>
-              </td>
-
-              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                <label class="inline-flex items-center cursor-pointer">
-                  <input type="checkbox" value="" class="sr-only peer" />
-                  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none   dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
-                </label>
-              </td>
-              <td className="border-b border-gray-200 bg-white px-2 py-5 text-sm">
-                <select name="number" id="number" className="p-1">
-                  <option value="default" disabled selected hidden className="">
-                    0
-                  </option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                <p className="whitespace-no-wrap">732323</p>
-              </td>
-              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
                 <div className="flex items-center">
-                  <p className="whitespace-no-wrap">Maplewood Middle School</p>
+                  {/* <button
+                    className={`text-violet-900
+                     rounded-full border-2 border-violet-900 px-6 py-1  transition-colors hover:bg-violet-500 hover:text-white`}
+                  >
+                    <a
+                      href="https://morth.nic.in/sites/default/files/dd12-13_0.pdf"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View Ques paper
+                    </a>
+                  </button> */}
                 </div>
               </td>
               <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                <p className="whitespace-no-wrap">Jain Temple Road, Mumbai</p>
-              </td>
-
-              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                <label class="inline-flex items-center cursor-pointer">
+                <label class="flex flex-col justify-center items-center cursor-pointer">
                   <input
-                    type="checkbox"
-                    value=""
-                    class="sr-only peer"
-                    checked={false}
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleFileChange}
                   />
-                  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none   dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
+                  <button
+                    onClick={handleUpload}
+                    className={`text-violet-900 justify-center text-center flex flex-col font-bold
+                   px-1 py-1  transition-colors hover:bg-violet-500 hover:text-white`}
+                  >
+                    {" "}
+                  </button>
+                  {/* {fileUpload && (
+                    <div>
+                      <p>PDF File Upload: {fileUpload.name}</p>
+                    </div>
+                  )}
+                  <button
+                    onClick={handleRemove}
+                    className="text-red-500 flex flex-col justify-start"
+                  >
+                    Remove
+                  </button> */}
                 </label>
               </td>
               <td className="border-b border-gray-200 bg-white px-2 py-5 text-sm">
-                <select name="number" id="number" className="p-1">
-                  <option value="default" disabled selected hidden className="">
-                    0
-                  </option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                <p className="whitespace-no-wrap">1232323</p>
-              </td>
-              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                <div className="flex items-center">
-                  <p className="whitespace-no-wrap">Pinecrest High School</p>
-                </div>
-              </td>
-              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                <p className="whitespace-no-wrap">Pandav Nagar, Delhi</p>
-              </td>
-
-              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                <label class="inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    value=""
-                    class="sr-only peer"
-                    checked={false}
-                  />
-                  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none   dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
-                </label>
-              </td>
-              <td className="border-b border-gray-200 bg-white px-2 py-5 text-sm">
-                <select name="number" id="number" className="p-1">
-                  <option value="default" disabled selected hidden className="">
-                    0
-                  </option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <td className="bg-white px-5 py-5 text-sm border-b">
-                <p className="whitespace-no-wrap">663232</p>
-              </td>
-              <td className="bg-white px-5 py-5 text-sm border-b">
-                <div className="flex items-center">
-                  <p className="whitespace-no-wrap">Meadowview Academy</p>
-                </div>
-              </td>
-              <td className="bg-white px-5 py-5 text-sm border-b">
-                <p className="whitespace-no-wrap">Pandav Nagar, Delhi</p>
-              </td>
-
-              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                <label class="inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    value=""
-                    class="sr-only peer"
-                    checked={false}
-                  />
-                  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none   dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
-                </label>
-              </td>
-
-              <td className="border-b border-gray-200 bg-white px-2 py-5 text-sm">
-                <select name="number" id="number" className="p-1">
-                  <option value="default" disabled selected hidden className="">
-                    0
-                  </option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                <p className="whitespace-no-wrap">123434</p>
-              </td>
-              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                <div className="flex items-center">
-                  <p className="whitespace-no-wrap">
-                    Emerald Valley High School
-                  </p>
-                </div>
-              </td>
-              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                <p className="whitespace-no-wrap">Pandav Nagar, Delhi</p>
-              </td>
-
-              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                <label class="inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    value=""
-                    class="sr-only peer"
-                    checked={false}
-                  />
-                  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none   dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
-                </label>
-              </td>
-              <td className="border-b border-gray-200 bg-white px-2 py-5 text-sm">
-                <select name="number" id="number" className="p-1">
-                  <option value="default" disabled selected hidden className="">
-                    0
-                  </option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                </select>
+                <button
+                  className={`text-violet-900
+                     rounded-full border-2 border-violet-900 px-6 py-1  transition-colors hover:bg-violet-500 hover:text-white`}
+                >
+                  <a
+                    href="https://meet.google.com/kzb-arrt-zjn"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Class Link
+                  </a>
+                </button>
               </td>
             </tr>
           </tbody>
