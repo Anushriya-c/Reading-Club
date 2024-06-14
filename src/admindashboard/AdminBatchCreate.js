@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from "react";
-// import Navbar from "../components/navbar";
-
 import { useNavigate } from "react-router-dom";
-// import Breadcrum from "../components/breadcrum";
-
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import Screensizehook from "../components/Screensizehook";
@@ -12,8 +8,6 @@ import instance from "../Instance";
 import { Backdrop, CircularProgress } from "@mui/material";
 import Popup from "../components/Popup";
 import Cookies from "js-cookie";
-
-// import { Backdrop, CircularProgress } from "@mui/material";
 
 const AdminBatchCreate = () => {
   const [level, setLevel] = useState("");
@@ -36,43 +30,49 @@ const AdminBatchCreate = () => {
     setReloadForm(Math.random());
     setOpenPopup(false);
   };
+
   const validateURL = (url) => {
     const urlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
     if (!urlRegex.test(url)) {
       setUrlError("Please enter a valid URL.");
+      return false;
     } else {
       setUrlError("");
+      return true;
     }
   };
 
   const getAllLevels = async () => {
     setLoading(true);
-    const res = await instance({
-      url: `level/all`,
-      method: "GET",
-      headers: {
-        Authorization: Cookies.get("token"),
-        // accesskey: `auth74961a98ba76d4e4`,
-      },
-    });
-    setAllLevels(res.data.data);
-    setLoading(false);
+    try {
+      const res = await instance({
+        url: `level/all`,
+        method: "GET",
+        headers: {
+          Authorization: Cookies.get("token"),
+        },
+      });
+      setAllLevels(res.data.data);
+    } catch (error) {
+      console.error("Error fetching levels:", error);
+    } finally {
+      setLoading(false);
+    }
   };
-  const setValues = (value, field, e) => {
+
+  const setValues = (value, field) => {
     switch (field) {
       case "level":
         setLevel(value);
         break;
       case "startDate":
         setStartDate(value);
+        setDayOfWeek(getDayOfWeek(value)); // Automatically set the day of the week
         break;
       case "maximumStudents":
         if (value >= 1000) setMaxStudent(999);
         else if (value < 0) setMaxStudent(1);
         else setMaxStudent(value);
-        break;
-      case "dayOfWeek":
-        setDayOfWeek(value);
         break;
       case "url":
         setUrl(value);
@@ -80,27 +80,35 @@ const AdminBatchCreate = () => {
         break;
       case "starttime":
         setStartTime(value);
-
         const [hours, minutes] = value.split(":").map(Number);
         const endDate = new Date();
         endDate.setHours(hours + 1, minutes);
-
         const endHours = endDate.getHours().toString().padStart(2, "0");
         const endMinutes = endDate.getMinutes().toString().padStart(2, "0");
         const endTime = `${endHours}:${endMinutes}`;
-
         setEndTime(endTime);
         break;
-
       default:
-      // code block
+        break;
     }
+  };
+
+  const getDayOfWeek = (dateString) => {
+    const date = new Date(dateString);
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    return days[date.getUTCDay()];
   };
 
   const createBatch = async (e) => {
     e.preventDefault();
-    console.log(startDate, maxStudent, dayOfWeek, level, url);
-
     if (
       startDate.length === 0 ||
       maxStudent.length === 0 ||
@@ -108,12 +116,17 @@ const AdminBatchCreate = () => {
       url.length === 0 ||
       level.length === 0
     ) {
-      console.log(startDate.length);
       setHasBlank(true);
       return;
     } else {
       setHasBlank(false);
     }
+
+    // Additional validation checks
+    if (urlError.length > 0) {
+      return;
+    }
+
     setLoading(true);
     const postData = {
       level: level,
@@ -123,27 +136,32 @@ const AdminBatchCreate = () => {
       timing: `${startTime} to ${endTime}`,
       url: url,
     };
-    console.log(postData);
-    const res = await instance({
-      url: `batch/create`,
-      method: "POST",
-      data: postData,
-      headers: {
-        Authorization: Cookies.get("token"),
-      },
-    });
-    if (res.status === 201) {
-      setLevel("");
-      setStartDate("");
-      setMaxStudent("");
-      setDayOfWeek("");
-      setStartTime("");
-      setEndTime("");
-      setUrl("");
-      setOpenPopup(true);
+    try {
+      const res = await instance({
+        url: `batch/create`,
+        method: "POST",
+        data: postData,
+        headers: {
+          Authorization: Cookies.get("token"),
+        },
+      });
+      if (res.status === 201) {
+        setLevel("");
+        setStartDate("");
+        setMaxStudent("");
+        setDayOfWeek("");
+        setStartTime("");
+        setEndTime("");
+        setUrl("");
+        setOpenPopup(true);
+      }
+    } catch (error) {
+      console.error("Error creating batch:", error.response || error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
+
   useEffect(() => {
     getAllLevels();
   }, []);
@@ -156,46 +174,40 @@ const AdminBatchCreate = () => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-
       <Header highlight={"admin"} />
       <div className="flex">
         {screenSize.width < 550 ? "" : <Sidebar name={"adminbatchcreate"} />}
-
         <div className="w-full bg-gray-300">
           <BreadCrumb crumbData={[{ name: "Batch Creation", path: null }]} />
-
           <div className="lg:m-10" key={reloadForm}>
-            <form className="relative border  space-y-3 max-w-screen-md mx-auto rounded-md bg-white p-6 shadow-xl lg:p-10">
+            <form className="relative border space-y-3 max-w-screen-md mx-auto rounded-md bg-white p-6 shadow-xl lg:p-10">
               <h1 className="mb-6 text-xl font-semibold lg:text-2xl">
                 Create Batch
               </h1>
-
               <div>
                 <label className=""> Level </label>
                 <select
                   onChange={(e) => {
                     setValues(e.target.value, "level");
                   }}
-                  placeholde
                   name="level"
                   id="level"
                   className={`mt-2 h-12 w-full rounded-md bg-gray-100 border-2 ${
-                    hasBlank ? (level.length == 0 ? "border-red-500" : "") : ""
-                  } px-3 text-gray-800  `}
+                    hasBlank ? (level.length === 0 ? "border-red-500" : "") : ""
+                  } px-3 text-gray-800`}
                 >
-                  <option value="default" disabled selected hidden className="">
+                  <option value="default" disabled selected hidden>
                     Select Level
                   </option>
-                  {alllevels.map(function (ele) {
-                    return (
-                      <option
-                        className="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                        value={ele._id}
-                      >
-                        {ele.level}
-                      </option>
-                    );
-                  })}
+                  {alllevels.map((ele) => (
+                    <option
+                      key={ele._id}
+                      className="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
+                      value={ele._id}
+                    >
+                      {ele.level}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
@@ -212,16 +224,16 @@ const AdminBatchCreate = () => {
                       "-" +
                       (new Date().getMonth() + 1).toString().padStart(2, "0") +
                       "-" +
-                      new Date().getDate().toString()
+                      new Date().getDate().toString().padStart(2, "0")
                     }
                     placeholder="Start Date"
                     className={`mt-2 h-12 w-full rounded-md bg-gray-100 border-2 ${
                       hasBlank
-                        ? startDate.length == 0
+                        ? startDate.length === 0
                           ? "border-red-500"
                           : ""
                         : ""
-                    } px-3 text-gray-800  `}
+                    } px-3 text-gray-800`}
                   />
                 </div>
                 <div>
@@ -235,101 +247,42 @@ const AdminBatchCreate = () => {
                     placeholder="Maximum Student"
                     className={`mt-2 h-12 w-full rounded-md bg-gray-100 border-2 ${
                       hasBlank
-                        ? maxStudent.length == 0
+                        ? maxStudent.length === 0
                           ? "border-red-500"
                           : ""
                         : ""
-                    } px-3 text-gray-800  `}
+                    } px-3 text-gray-800`}
                   />
                 </div>
               </div>
               <div>
-                <div className="">
-                  <label className=""> Select a Day </label>
-                  <select
-                    onChange={(e) => {
-                      setValues(e.target.value, "dayOfWeek");
-                    }}
-                    placeholder
-                    name="Select any day"
-                    id="days"
-                    className={`mt-2 h-12 w-full rounded-md bg-gray-100 border-2 ${
-                      hasBlank
-                        ? dayOfWeek.length == 0
-                          ? "border-red-500"
-                          : ""
+                <label className=""> Day of the Week </label>
+                <input
+                  value={dayOfWeek}
+                  readOnly
+                  className={`mt-2 h-12 w-full rounded-md bg-gray-100 border-2 ${
+                    hasBlank
+                      ? dayOfWeek.length === 0
+                        ? "border-red-500"
                         : ""
-                    } px-3 text-gray-800  `}
-                  >
-                    <option
-                      value="default"
-                      disabled
-                      selected
-                      hidden
-                      className=""
-                    >
-                      Select Days
-                    </option>
-                    <option
-                      className="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="Monday"
-                    >
-                      Monday
-                    </option>
-                    <option
-                      className="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="Tuesday"
-                    >
-                      Tuesday
-                    </option>
-                    <option
-                      className="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="Wednesday"
-                    >
-                      Wednesday
-                    </option>
-                    <option
-                      className="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="Thursday"
-                    >
-                      Thursday
-                    </option>
-                    <option
-                      className="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="Friday"
-                    >
-                      Friday
-                    </option>
-                    <option
-                      className="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="Saturday"
-                    >
-                      Saturday
-                    </option>
-                    <option
-                      className="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="Sunday"
-                    >
-                      Sunday
-                    </option>
-                  </select>
-                </div>
+                      : ""
+                  } px-3 text-gray-800`}
+                />
               </div>
               <div className="grid gap-3 lg:grid-cols-2">
                 <div>
                   <label className=""> Start Time </label>
                   <input
                     type="time"
-                    id="appt"
-                    name="appt"
                     required
+                    step="300"
                     className={`mt-2 h-12 w-full rounded-md bg-gray-100 border-2 ${
                       hasBlank
-                        ? startTime.length == 0
+                        ? startTime.length === 0
                           ? "border-red-500"
                           : ""
                         : ""
-                    } px-3 text-gray-800  `}
+                    } px-3 text-gray-800`}
                     onChange={(e) => {
                       setValues(e.target.value, "starttime");
                     }}
@@ -339,17 +292,16 @@ const AdminBatchCreate = () => {
                   <label className=""> End Time </label>
                   <input
                     type="time"
-                    id="appt"
-                    name="appt"
                     value={endTime}
                     readOnly
+                    step="300" // Set step to 300 seconds (5 minutes)
                     className={`mt-2 h-12 w-full rounded-md bg-gray-100 border-2 ${
                       hasBlank
-                        ? endTime.length == 0
+                        ? endTime.length === 0
                           ? "border-red-500"
                           : ""
                         : ""
-                    } px-3 text-gray-800  `}
+                    } px-3 text-gray-800`}
                   />
                 </div>
               </div>
@@ -363,8 +315,8 @@ const AdminBatchCreate = () => {
                   value={url}
                   placeholder="URL"
                   className={`mt-2 h-12 w-full rounded-md bg-gray-100 border-2 ${
-                    hasBlank ? (url.length == 0 ? "border-red-500" : "") : ""
-                  } px-3 text-gray-800  `}
+                    hasBlank ? (url.length === 0 ? "border-red-500" : "") : ""
+                  } px-3 text-gray-800`}
                 />
                 {urlError && (
                   <div style={{ color: "red", marginTop: "10px" }}>
@@ -390,7 +342,7 @@ const AdminBatchCreate = () => {
         closePopUp={HandleRemovePopUp}
         data={
           <div className="bg-gray-100 h-fit">
-            <div className="bg-white p-6  md:mx-auto">
+            <div className="bg-white p-6 md:mx-auto">
               <svg
                 viewBox="0 0 24 24"
                 className="text-green-600 w-16 h-16 mx-auto my-6"
