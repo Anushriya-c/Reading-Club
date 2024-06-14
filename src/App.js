@@ -27,6 +27,9 @@ import StudentBatch from "./StudentPanel/StudentBatch";
 import StudentData from "./teacherpanel/StudentData";
 import CreateSession from "./teacherpanel/CreateSession";
 import NotFound from "./pages/NotFound";
+import AssignmentInfo from "./StudentPanel/AssignmentInfo";
+import SessionDetails from "./StudentPanel/SessionDetails";
+import StudentDetails from "./StudentPanel/SessionDetails";
 
 function App() {
   const action = useNavigationType();
@@ -80,6 +83,10 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/studentsignup" element={<StudentSignUp />} />
       <Route path="/adminhome" element={Admin ? <AdminHome /> : <SignIn />} />
+      <Route
+        path="/studentbatch"
+        element={Student ? <StudentBatch /> : <SignIn />}
+      />
       <Route path="/adminschoolregistration" element={<AdminSchoolReg />} />
       <Route path="/adminschoolmanage" element={<AdminSchoolMng />} />
       <Route path="/adminbatchcreate" element={<AdminBatchCreate />} />
@@ -87,23 +94,32 @@ function App() {
       <Route path="/studentdata" element={<StudentData />} />
       <Route path="/adminprofilesetting" element={<AdminProfileSetting />} />
       <Route path="/adminschooledit/:id" element={<AdminSchoolEdit />} />
+      <Route path="/sessiondetails/:id" element={<SessionDetails />} />
       <Route path="/adminbatchedit" element={<AdminBatchEdit />} />
+      <Route path="/assignmentInfo/:batchid" element={<AssignmentInfo />} />
+      <Route path="/sessiondetails/:id" elememt={<StudentDetails />} />
       <Route path="/teachersession/:batchid" element={<Teachersession />} />
       <Route path="/notfound" element={<NotFound />} />
-      <Route path="/signin" element={Admin ? <AdminHome /> : <SignIn />} />
-      <Route path="/signin" element={Student ? <StudentBatch /> : <SignIn />} />
-      <Route path="/signin" element={Teacher ? <Teacherlevel /> : <SignIn />} />
       <Route
-        path="/studentbatch"
-        element={Student ? <StudentBatch /> : <SignIn />}
+        path="/signin"
+        element={
+          Admin ? (
+            <AdminHome />
+          ) : Student ? (
+            <StudentBatch />
+          ) : Teacher ? (
+            <Teacherlevel />
+          ) : (
+            <SignIn />
+          )
+        }
       />
-
       <Route
         path="/teacherbatch/:levelid"
         element={Teacher ? <Teacherbatch /> : <SignIn />}
       />
       <Route
-        path="/studentsession"
+        path="/studentsession/:batchid"
         element={Student ? <StudentSession /> : <SignIn />}
       />
       <Route

@@ -20,6 +20,7 @@ const StudentData = () => {
           <thead>
             <tr className="bg-violet-600 text-left text-xs font-semibold uppercase tracking-widest text-white">
               <th className="px-5 py-3">Student Name</th>
+              <th className="px-5 py-3">Assignment Subject/Name</th>
               <th className="px-5 py-3">Session Date/Time</th>
               <th className="px-5 py-3">Updated Assignments</th>
               <th className="px-5 py-3">FeedBack/Remarks</th>
@@ -30,6 +31,9 @@ const StudentData = () => {
             <tr>
               <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
                 <p className="whitespace-no-wrap">Anushriya Chatterjee</p>
+              </td>
+              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
+                <p className="whitespace-no-wrap">English Story</p>
               </td>
               <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
                 <div className="flex items-center">
@@ -44,11 +48,7 @@ const StudentData = () => {
                     className={`text-violet-900
                      rounded-full border-2 border-violet-900 px-6 py-1  transition-colors hover:bg-violet-500 hover:text-white`}
                   >
-                    <a
-                      href="https://morth.nic.in/sites/default/files/dd12-13_0.pdf"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
+                    <a href="https://morth.nic.in/sites/default/files/dd12-13_0.pdf">
                       View Assignments
                     </a>
                   </button>
@@ -68,9 +68,12 @@ const StudentData = () => {
                 <p className="whitespace-no-wrap">Riya Maheshwari </p>
               </td>
               <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
+                <p className="whitespace-no-wrap">Hindi Story</p>
+              </td>
+              <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
                 <div className="flex items-center">
                   <p className="whitespace-no-wrap">
-                    25th May 2024/16:00 to 18:00
+                    28th May 2024/16:00 to 18:00
                   </p>
                 </div>
               </td>
@@ -80,11 +83,7 @@ const StudentData = () => {
                     className={`text-violet-900
                      rounded-full border-2 border-violet-900 px-6 py-1  transition-colors hover:bg-violet-500 hover:text-white`}
                   >
-                    <a
-                      href="https://morth.nic.in/sites/default/files/dd12-13_0.pdf"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
+                    <a href="https://morth.nic.in/sites/default/files/dd12-13_0.pdf">
                       View Assignments
                     </a>
                   </button>

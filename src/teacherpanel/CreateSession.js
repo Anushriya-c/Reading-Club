@@ -8,42 +8,47 @@ import Cookies from "js-cookie";
 import { useParams } from "react-router-dom";
 
 const CreateSession = () => {
-  const [batchId, setBatchId] = useState([]);
+  const [batchId, setBatchId] = useState("");
   const [areFilesAllowed, setAreFilesAllowed] = useState("");
   const [studentMaxFiles, setStudentMaxFiles] = useState("");
-  const [startDate, setStartDate] = useState("");
+  const [date, setDate] = useState("");
   const [hasBlank, setHasBlank] = useState(false);
   const [openPopup, setOpenPopup] = useState(false);
   const [reloadForm, setReloadForm] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [session, setSession] = useState([]);
+  const [batch, setBatch] = useState([]);
   let { batchid } = useParams();
 
   const HandleRemovePopUp = () => {
     setReloadForm(Math.random());
     setOpenPopup(false);
   };
-  const getSession = async () => {
-    const res = await instance({
-      url: `/session/all/${batchid}`,
-      method: "GET",
-      headers: {
-        Authorization: Cookies.get("token"),
-      },
-    });
-    console.log(res.data.data);
-    setSession(res.data.data);
+
+  const getSessionByBatch = async () => {
+    try {
+      const res = await instance({
+        url: `/batch/id/${batchid}`,
+        method: "GET",
+        headers: {
+          Authorization: Cookies.get("token"),
+        },
+      });
+      // setSession(res.data.data);
+      setBatch(res.data.data);
+    } catch (error) {
+      console.error("Failed to fetch session data:", error);
+    }
   };
+
   useEffect(() => {
-    if (`${batchid}`) getSession();
-  }, [batchid]);
+    setBatchId(batchid);
+    getSessionByBatch();
+  }, []);
+
   const setValues = (value, field) => {
     switch (field) {
-      // case "batchId":
-      //   setBatchId(value);
-      //   break;
-      case "startDate":
-        setStartDate(value);
+      case "date":
+        setDate(value);
         break;
       case "studentmaxfiles":
         if (value >= 1000) setStudentMaxFiles(999);
@@ -57,46 +62,59 @@ const CreateSession = () => {
     }
   };
 
-  const CreateSession = async (e) => {
+  const createSession = async (e) => {
     e.preventDefault();
-    console.log(startDate, batchId, areFilesAllowed, studentMaxFiles);
 
     if (
-      startDate.length === 0 ||
-      // batchId.length === 0 ||
+      batchId.length === 0 ||
+      date.length === 0 ||
       areFilesAllowed.length === 0 ||
       studentMaxFiles.length === 0
     ) {
-      console.log(startDate.length);
       setHasBlank(true);
       return;
     } else {
       setHasBlank(false);
     }
-    setLoading(true);
+
     const postData = {
-      batchId: batchid,
-      startDate: startDate,
-      areFilesAllowed: areFilesAllowed,
-      studentMaxFiles: studentMaxFiles,
+      batchId,
+      date,
+      areFilesAllowed,
+      studentMaxFiles,
     };
-    console.log(postData);
-    const res = await instance({
-      url: `session/create`,
-      method: "POST",
-      data: postData,
-      headers: {
-        Authorization: Cookies.get("token"),
-      },
-    });
-    if (res.status === 201) {
-      setBatchId(batchid);
-      setStartDate("");
-      setAreFilesAllowed("");
-      setStudentMaxFiles("");
-      setOpenPopup(true);
+
+    console.log("Sending postData:", postData);
+
+    setLoading(true);
+    try {
+      const res = await instance({
+        url: `session/create`,
+        method: "POST",
+        data: postData,
+        headers: {
+          Authorization: Cookies.get("token"),
+        },
+      });
+
+      if (res.status === 200) {
+        setDate("");
+        setAreFilesAllowed("");
+        setStudentMaxFiles("");
+        setOpenPopup(true);
+      } else {
+        console.error("Session creation failed:", res);
+        alert("Session creation failed.");
+      }
+    } catch (error) {
+      console.error(
+        "Error creating session:",
+        error.response ? error.response.data : error.message
+      );
+      alert("An error occurred while creating the session.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -113,32 +131,32 @@ const CreateSession = () => {
         <div className="w-full bg-gray-300">
           <BreadCrumb crumbData={[{ name: "Session Creation", path: null }]} />
           <div className="lg:m-10" key={reloadForm}>
-            <form className="relative border  space-y-3 max-w-screen-md mx-auto rounded-md bg-white p-6 shadow-xl lg:p-10">
+            <form
+              className="relative border space-y-3 max-w-screen-md mx-auto rounded-md bg-white p-6 shadow-xl lg:p-10"
+              onSubmit={createSession}
+            >
               <h1 className="mb-6 text-xl font-semibold lg:text-2xl">
                 Create Session
               </h1>
               <div className="flex flex-col gap-8 sm:grid-cols-2 sm:gap-12 lg:grid-cols-3">
                 <div>
-                  <label className=""> Batch ID </label>
-                  {session.map(function (ele) {
-                    return (
-                      <input
-                        className="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                        value={ele._id}
-                      >
-                        {ele.batchId._id}
-                      </input>
-                    );
-                  })}
+                  <label>Batch Name</label>
+                  {
+                    <h6
+                      key={batch._id}
+                      className="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
+                      value={batch._id}
+                    >
+                      {batch.batchName}
+                    </h6>
+                  }
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
-                    <label className=""> Start Date </label>
+                    <label>Date</label>
                     <input
-                      onChange={(e) => {
-                        setValues(e.target.value, "startDate");
-                      }}
-                      value={startDate}
+                      onChange={(e) => setValues(e.target.value, "date")}
+                      value={date}
                       type="date"
                       min={
                         new Date().getFullYear().toString() +
@@ -147,83 +165,54 @@ const CreateSession = () => {
                           .toString()
                           .padStart(2, "0") +
                         "-" +
-                        new Date().getDate().toString()
+                        new Date().getDate().toString().padStart(2, "0")
                       }
-                      placeholder="Start Date"
+                      placeholder="Date"
                       className={`mt-2 h-12 w-full rounded-md bg-gray-100 border-2 ${
-                        hasBlank
-                          ? startDate.length == 0
-                            ? "border-red-500"
-                            : ""
-                          : ""
-                      } px-3 text-gray-800  `}
+                        hasBlank && date.length === 0 ? "border-red-500" : ""
+                      } px-3 text-gray-800`}
                     />
                   </div>
                   <div>
-                    <label className=""> Maximum Files Allowed </label>
+                    <label>Maximum Files Allowed</label>
                     <input
-                      onChange={(e) => {
-                        setValues(e.target.value, "studentmaxfiles");
-                      }}
+                      onChange={(e) =>
+                        setValues(e.target.value, "studentmaxfiles")
+                      }
                       value={studentMaxFiles}
                       type="number"
                       placeholder="Maximum Files"
                       className={`mt-2 h-12 w-full rounded-md bg-gray-100 border-2 ${
-                        hasBlank
-                          ? studentMaxFiles.length == 0
-                            ? "border-red-500"
-                            : ""
+                        hasBlank && studentMaxFiles.length === 0
+                          ? "border-red-500"
                           : ""
-                      } px-3 text-gray-800  `}
+                      } px-3 text-gray-800`}
                     />
                   </div>
                 </div>
                 <div>
-                  <div className="">
-                    <label className=""> Files Allowed </label>
-                    <select
-                      onChange={(e) => {
-                        setValues(e.target.value, "setarefilesallowed");
-                      }}
-                      placeholder
-                      name="Select"
-                      id="days"
-                      className={`mt-2 h-12 w-full rounded-md bg-gray-100 border-2 ${
-                        hasBlank
-                          ? areFilesAllowed.length == 0
-                            ? "border-red-500"
-                            : ""
-                          : ""
-                      } px-3 text-gray-800  `}
-                    >
-                      <option
-                        value="default"
-                        disabled
-                        selected
-                        hidden
-                        className=""
-                      >
-                        Select
-                      </option>
-                      <option
-                        className="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                        value="Monday"
-                      >
-                        TRUE
-                      </option>
-                      <option
-                        className="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                        value="Tuesday"
-                      >
-                        FALSE
-                      </option>
-                    </select>
-                  </div>
+                  <label>Files Allowed</label>
+                  <select
+                    onChange={(e) =>
+                      setValues(e.target.value, "setarefilesallowed")
+                    }
+                    value={areFilesAllowed}
+                    className={`mt-2 h-12 w-full rounded-md bg-gray-100 border-2 ${
+                      hasBlank && areFilesAllowed.length === 0
+                        ? "border-red-500"
+                        : ""
+                    } px-3 text-gray-800`}
+                  >
+                    <option value="" disabled hidden>
+                      Select
+                    </option>
+                    <option value="true">TRUE</option>
+                    <option value="false">FALSE</option>
+                  </select>
                 </div>
                 <div>
                   <button
-                    onClick={CreateSession}
-                    type="button"
+                    type="submit"
                     className="mt-5 w-full rounded-md bg-violet-600 hover:bg-violet-500 p-2 text-center font-semibold text-white"
                   >
                     Create Session
@@ -239,7 +228,7 @@ const CreateSession = () => {
         closePopUp={HandleRemovePopUp}
         data={
           <div className="bg-gray-100 h-fit">
-            <div className="bg-white p-6  md:mx-auto">
+            <div className="bg-white p-6 md:mx-auto">
               <svg
                 viewBox="0 0 24 24"
                 className="text-green-600 w-16 h-16 mx-auto my-6"
@@ -251,7 +240,7 @@ const CreateSession = () => {
               </svg>
               <div className="text-center">
                 <h3 className="md:text-2xl text-base text-gray-900 font-semibold text-center">
-                  Session Creation Success!
+                  Session Created Successfully!
                 </h3>
                 <div className="py-10 text-center">
                   <button

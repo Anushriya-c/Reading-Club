@@ -132,7 +132,7 @@ const AdminSchoolEdit = () => {
                     </ul>
                   </div>
                 </div> */}
-                 <div>
+                <div>
                   <label class=""> School State </label>
                   <select
                     placeholde
@@ -219,18 +219,6 @@ const AdminSchoolEdit = () => {
                   </select>
                 </div>
               </div>
-
-              {/* <div class="checkbox">
-                <input type="checkbox" id="chekcbox1" checked="" />
-                <label for="checkbox1">
-                  I agree to the{" "}
-                  <a href="#" target="_blank" class="text-blue-600">
-                    {" "}
-                    Terms and Conditions{" "}
-                  </a>{" "}
-                </label>
-              </div> */}
-
               <div>
                 <button
                   type="button"

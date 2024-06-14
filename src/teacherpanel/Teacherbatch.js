@@ -7,17 +7,15 @@ import Cookies from "js-cookie";
 
 const Teacherbatch = () => {
   const [allBatch, setAllBatch] = useState([]);
-  let { levelid, batchid } = useParams();
+  let { levelid } = useParams();
   const getAllBatch = async () => {
-    // setLoading(true);
     const res = await instance({
-      url: `batch//level/${levelid}`,
+      url: `batch/level/${levelid}`,
       method: "GET",
       headers: {
         Authorization: Cookies.get("token"),
       },
     });
-    console.log(batchid);
     setAllBatch(res.data.data);
     // setLoading(false);
   };
@@ -50,8 +48,8 @@ const Teacherbatch = () => {
                   <h1 class="text-sm uppercase">{ele.batchName}</h1>
                   <h1 class="text-lg font-semibold">{`Total Students: ${ele.maximumStudents}`}</h1>
                   <Link
-                    to={`/teachersession/${batchid}`}
-                    class="absolute bottom-0 right-0 flex h-12 w-12 items-center justify-center bg-violet-500 text-white transition-all hover:w-16"
+                    to={`/teachersession/${ele._id}`}
+                    className="absolute bottom-0 right-0 flex h-12 w-12 items-center justify-center bg-violet-500 text-white transition-all hover:w-16"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

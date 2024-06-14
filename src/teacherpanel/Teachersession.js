@@ -67,7 +67,7 @@ const Teachersession = () => {
     getAllSession();
   }, []);
   return (
-    <div>
+    <div className="overflow-hidden">
       <Header highlight={"tchrpnl"} />
       <BreadCrumb
         crumbData={[
@@ -81,13 +81,7 @@ const Teachersession = () => {
             className={`text-violet-900
                      rounded-full border-2 border-violet-900 px-6 py-1  transition-colors hover:bg-violet-500 hover:text-white`}
           >
-            <a
-              href={`/createSession/${batchid}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Create Sessions
-            </a>
+            <a href={`/createSession/${batchid}`}>Create Sessions</a>
           </button>
         </div>
         <table className="w-full border-2 border-violet-600 rounded-md">
@@ -95,7 +89,6 @@ const Teachersession = () => {
             <tr className="bg-violet-600 text-left text-xs font-semibold uppercase tracking-widest text-white">
               <th className="px-5 py-3">Session No.</th>
               <th className="px-5 py-3">Session Date</th>
-              <th className="px-5 py-3">Assignments Upload</th>
               <th className="px-5 py-3">Maximum Student Files</th>
               <th className="px-5 py-3">File Allowed</th>
               <th className="px-5 py-3">Sessions</th>
@@ -106,27 +99,18 @@ const Teachersession = () => {
               return (
                 <tr>
                   <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                    <p className="whitespace-no-wrap">{`${batchid}`}</p>
+                    <p className="whitespace-no-wrap">{ele.sessionNumber}</p>
                   </td>
-                  <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                    <div className="flex items-center">
-                      <p className="whitespace-no-wrap">{ele.date}</p>
-                    </div>
-                  </td>
-                  <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                    <label class="flex flex-col justify-center items-center cursor-pointer">
-                      <input
-                        type="file"
-                        accept="application/pdf"
-                        onChange={handleFileChange}
-                      />
-                      <button
-                        onClick={handleUpload}
-                        className={`text-violet-900 justify-center text-center flex flex-col font-bold
-                   px-1 py-1  transition-colors hover:bg-violet-500 hover:text-white`}
-                      ></button>
-                    </label>
-                  </td>
+                  <Link
+                    to={`/sessiondetails/${ele._id}`}
+                    className="items-center justify-center border-b border-gray-200"
+                  >
+                    <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
+                      <div className="flex items-center mt-3">
+                        <p className="whitespace-no-wrap">{ele.date}</p>
+                      </div>
+                    </td>
+                  </Link>
                   <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
                     <div className="flex items-center">
                       <p className="whitespace-no-wrap">
@@ -146,26 +130,11 @@ const Teachersession = () => {
                       className={`text-violet-900
                      rounded-full border-2 border-violet-900 px-6 py-1  transition-colors hover:bg-violet-500 hover:text-white`}
                     >
-                      <a
-                        href="https://meet.google.com/kzb-arrt-zjn"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
+                      <a href="https://meet.google.com/znk-suhu-vhn?authuser=1">
                         Class Link
                       </a>
                     </button>
                   </td>
-                  {/* <td className="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                    <label className="flex flex-col justify-center items-center cursor-pointer ">
-                      <input
-                        type="checkbox"
-                        value=""
-                        className="sr-only peer"
-                        // checked={ele.status}
-                        // onClick={() => handleOpenPopUp(ele._id, ele.status)}
-                      />
-                    </label>
-                  </td> */}
                 </tr>
               );
             })}

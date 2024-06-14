@@ -1,28 +1,270 @@
-import { useState } from "react";
-import { Button } from "@mui/material";
-import InputnameCopy from "./InputnameCopy";
-import PhoneInput from "react-phone-input-2";
+import { useEffect, useState } from "react";
 import "react-phone-input-2/lib/style.css";
+import Popup from "../components/Popup";
+import instance from "../Instance";
+import Cookies from "js-cookie";
 
 const SignUpFormStudent = () => {
   const [checkboxChecked, setCheckboxChecked] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isMobileValid, setIsMobileValid] = useState(true);
+  const [isEmailValid, setIsEmailValid] = useState(true);
+  const [openPopup, setOpenPopup] = useState(false);
+  const [schoolName, setSchoolName] = useState("");
   const [schoolCode, setSchoolCode] = useState("");
-  const codeList = ["ABCD1234", "XYZ123"];
-  const schoolCodeMap = { ABCD1234: "ABCD School", XYZ123: "XYZ School" };
-  const [phone, setPhone] = useState("+91");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [countryCode, setCountryCode] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [gender, setGender] = useState("");
+  const [level, setLevel] = useState("");
+  const [batchId, setBatchId] = useState("");
+  const [batches, setBatches] = useState([]); // Store fetched batches here
+  const [hasBlank, setHasBlank] = useState(false);
+  const [error, setError] = useState("");
+  const [allLevels, setAllLevels] = useState([]);
 
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName] = useState("")
-  const [email, setEmail] = useState("")
+  const getAllLevels = async () => {
+    setLoading(true);
+    try {
+      const res = await instance({
+        url: `level/all`,
+        method: "GET",
+        headers: {
+          Authorization: Cookies.get("token"),
+        },
+      });
+      setAllLevels(res.data.data);
+    } catch (error) {
+      console.error("Error fetching levels:", error);
+    }
+    setLoading(false);
+  };
 
+  useEffect(() => {
+    getAllLevels();
+  }, []);
 
-  const defaultSchoolCode = () => {
-    if(schoolCode !== "ABCD1234") setSchoolCode("ABCD1234")
-    if(schoolCode === "ABCD1234") setSchoolCode("")
-  }
+  const getBatchId = async (levelId) => {
+    try {
+      const res = await instance({
+        url: `batch/level/${levelId}`,
+        method: "GET",
+        headers: {
+          Authorization: Cookies.get("token"),
+        },
+      });
+      console.log("Fetched batches:", res.data.data);
+      setBatches(res.data.data);
+    } catch (error) {
+      console.error("Error fetching batchId:", error);
+    }
+  };
+
+  useEffect(() => {
+    console.log("All batches:", batches);
+  }, [batches]);
+
+  const getSchoolCode = async () => {
+    try {
+      const res = await instance({
+        url: `school/checkCode/${schoolCode}`,
+        method: "GET",
+        headers: {
+          Authorization: Cookies.get("token"),
+        },
+      });
+      if (res.data.data.schoolName) {
+        setSchoolName(res.data.data.schoolName);
+        setError("");
+      } else {
+        setSchoolName("");
+        setError("Invalid school code.");
+      }
+    } catch (error) {
+      console.error("Error fetching school name:", error);
+      setSchoolName("");
+      setError("Invalid school code.");
+    }
+  };
+
+  const validateSchoolCode = (value) => {
+    if (value.length < 6 || value.length > 12) {
+      setError("School code must be between 6 and 12 characters.");
+    } else {
+      setError("");
+    }
+  };
+
+  const validateMobileNumber = (mobile) => {
+    const mobileRegex = /^\d{10}$/;
+    setIsMobileValid(mobileRegex.test(mobile));
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    setIsEmailValid(emailRegex.test(email));
+  };
+
+  useEffect(() => {
+    if (email) validateEmail(email);
+    if (mobile) validateMobileNumber(mobile);
+  }, [email, mobile]);
+
+  const setValues = (value, field) => {
+    const regex = /^[a-zA-Z0-9 ]*$/;
+    switch (field) {
+      case "firstname":
+        if (!regex.test(value)) {
+          alert("Please type only alphabets.");
+          return;
+        }
+        setFirstName(value);
+        break;
+      case "lastname":
+        if (!regex.test(value)) {
+          alert("Please type only alphabets.");
+          return;
+        }
+        setLastName(value);
+        break;
+      case "email":
+        setEmail(value);
+        validateEmail(value);
+        break;
+      case "mobile":
+        if (value.length == 11) break;
+        setMobile(value);
+        validateMobileNumber(value);
+        break;
+      case "countrycode":
+        setCountryCode(value);
+        break;
+      case "gender":
+        setGender(value);
+        break;
+      case "schoolcode":
+        if (value.length > 12) break;
+        value = value.trim();
+        if (!regex.test(value)) {
+          alert("Please type only alphabets and numbers.");
+          return;
+        }
+        setSchoolCode(value.toUpperCase());
+        validateSchoolCode(value.toUpperCase());
+        break;
+      case "level":
+        setLevel(value);
+        break;
+      case "schoolname":
+        if (!regex.test(value)) {
+          alert("Please type only alphabets.");
+          return;
+        }
+        setSchoolName(value);
+        break;
+      case "batchId":
+        setBatchId(value);
+        break;
+      default:
+    }
+  };
+
+  const createStudent = async (e) => {
+    e.preventDefault();
+    console.log("Form submission started");
+
+    if (
+      firstName.length === 0 ||
+      lastName.length === 0 ||
+      email.length === 0 ||
+      mobile.length === 0 ||
+      countryCode.length === 0 ||
+      gender.length === 0 ||
+      schoolCode.length === 0 ||
+      level.length === 0 ||
+      schoolName.length === 0 ||
+      batchId.length === 0 ||
+      !checkboxChecked
+    ) {
+      setHasBlank(true);
+      console.log("Form has blank fields");
+      return;
+    } else {
+      setHasBlank(false);
+    }
+
+    setLoading(true);
+    const postData = {
+      firstName,
+      lastName,
+      email,
+      mobile,
+      countryCode,
+      gender,
+      schoolCode,
+      batchId,
+    };
+
+    console.log("Submitting data:", postData); // Logging the data to be submitted
+
+    try {
+      const res = await instance({
+        url: `user/createStudent`,
+        method: "POST",
+        data: postData,
+        headers: {
+          Authorization: Cookies.get("token"),
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("Response received", res);
+
+      if (res.status === 201) {
+        console.log("Student registration successful");
+        setOpenPopup(true);
+      } else {
+        console.error(
+          "Error registering student: Unexpected status code",
+          res.status
+        );
+      }
+    } catch (error) {
+      console.error("Error creating student:", error);
+      if (error.response) {
+        console.error("Server responded with:", error.response.data);
+      } else {
+        console.error("No response from server");
+      }
+    }
+    setLoading(false);
+  };
+
+  // Function to handle closing the popup
+  const handlePopupClose = () => {
+    setOpenPopup(false);
+    // Clear form fields after closing the popup
+    setFirstName("");
+    setLastName("");
+    setEmail("");
+    setMobile("");
+    setGender("");
+    setSchoolCode("");
+    setLevel("");
+    setSchoolName("");
+    setBatchId("");
+    setCheckboxChecked(false);
+    setOpenPopup(false);
+  };
+
   return (
     <div className="lg:m-10">
-      <form className="relative border border-gray-100 space-y-3 max-w-screen-md mx-auto rounded-md bg-white p-6 shadow-xl lg:p-10">
+      <form
+        className="relative border border-gray-100 space-y-3 max-w-screen-md mx-auto rounded-md bg-white p-6 shadow-xl lg:p-10"
+        onSubmit={createStudent}
+      >
         <h1 className="mb-6 text-xl font-semibold lg:text-2xl">
           Student Registration
         </h1>
@@ -31,360 +273,225 @@ const SignUpFormStudent = () => {
           <div>
             <label className=""> First Name </label>
             <input
+              onChange={(e) => {
+                setValues(e.target.value, "firstname");
+              }}
+              value={firstName}
               type="text"
-              placeholder="Your Name"
-              className="mt-2 h-12 w-full rounded-md bg-gray-100 px-3"
+              placeholder="Your First Name"
+              className={`mt-2 h-12 w-full border-2 ${
+                hasBlank ? (firstName.length === 0 ? "border-red-500" : "") : ""
+              } rounded-md bg-gray-100 px-3`}
             />
           </div>
           <div>
             <label className=""> Last Name </label>
             <input
+              onChange={(e) => {
+                setValues(e.target.value, "lastname");
+              }}
+              value={lastName}
               type="text"
-              placeholder="Last  Name"
-              className="mt-2 h-12 w-full rounded-md bg-gray-100 px-3"
+              placeholder="Your Last Name"
+              className={`mt-2 h-12 w-full border-2 ${
+                hasBlank ? (lastName.length === 0 ? "border-red-500" : "") : ""
+              } rounded-md bg-gray-100 px-3`}
             />
           </div>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <div>
-            <label className=""> Email Address </label>
+            <label className=""> Email </label>
             <input
+              onChange={(e) => {
+                setValues(e.target.value, "email");
+              }}
+              value={email}
               type="email"
               placeholder="Your Email"
-              className="mt-2 h-12 w-full rounded-md bg-gray-100 px-3"
+              className={`mt-2 h-12 w-full border-2 ${
+                !isEmailValid ? "border-red-500" : ""
+              } ${
+                hasBlank ? (email.length === 0 ? "border-red-500" : "") : ""
+              } rounded-md bg-gray-100 px-3`}
             />
+            {!isEmailValid && (
+              <p className="text-red-500">
+                Please enter a valid email address.
+              </p>
+            )}
           </div>
           <div>
-              <label className=""> Phone Number </label>
-
-              <div className="pt-2">
-                <PhoneInput
-                  value={phone}
-                  onChange={(num) => setPhone(num)}
-                  inputStyle={{
-                    height: "48px",
-                    width: "21rem",
-                    backgroundColor: "#F5F5F5",
-                    borderColor: "#F5F5F5",
-                  }}
-                  
-                />
-              </div>
-            </div>
-        </div>
-
-        <div className="grid gap-3 md:grid-cols-2">
-        <div>
-                  <label class=""> Gender </label>
-                  <select
-                    // onChange={(e) => {
-                    //   setValues(e.target.value, "state");
-                    // }}
-                    placeholde
-                    name="gender"
-                    id="gender"
-                    class={`mt-2 h-12 w-full rounded-md bg-gray-100 px-3 text-gray-800  `}
-                  >
-                    <option
-                      value="default"
-                      disabled
-                      selected
-                      hidden
-                      className=""
-                    >
-                      Select Gender
-                    </option>
-                    <option
-                      class="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="male"
-                    >
-                      Male
-                    </option>
-                    <option
-                      class="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="female"
-                    >
-                      Female
-                    </option>
-                    <option
-                      class="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="other"
-                    >
-                      Other
-                    </option>
-                  
-                  </select>
-                </div>
-
-          {/* <div>
-            <label className=""> Gender </label>
-            <div className="relative w-full mt-2 bg-gray-100 rounded-lg">
+            <label className=""> Mobile Number </label>
+            <div className="flex">
               <input
-                className="peer hidden"
-                type="checkbox"
-                name="select-2"
-                id="select-2"
-              />
-              <label
-                for="select-2"
-                className="flex w-full h-12 cursor-pointer rounded-lg select-none border p-2 px-3 pt-3 text-sm text-gray-700 ring-blue-400 peer-checked:ring"
-              >
-                Select Option{" "}
-              </label>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="pointer-events-none absolute right-5 top-3 h-4 text-gray-600 transition peer-checked:rotate-180"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-              <ul className="max-h-0 select-none flex-col overflow-hidden rounded-b-lg shadow-md transition-all duration-300 peer-checked:max-h-56 peer-checked:py-3">
-                <li className="cursor-pointer px-3 py-2 text-sm text-gray-500 hover:bg-blue-500 hover:text-white">
-                  Male
-                </li>
-                <li className="cursor-pointer px-3 py-2 text-sm text-gray-500 hover:bg-blue-500 hover:text-white">
-                  Female
-                </li>
-                <li className="cursor-pointer px-3 py-2 text-sm text-gray-500 hover:bg-blue-500 hover:text-white">
-                  Other
-                </li>
-              </ul>
-            </div>
-          </div> */}
-          <div>
-            <label className=""> Date of Birth </label>
-            <input
-              type="date"
-              placeholder="Last  Name"
-              className="mt-2 h-12 w-full rounded-md bg-gray-100 px-3"
-            />
-          </div>
-        </div>
-        <div className="grid gap-3 lg:grid-cols-2">
-          <div>
-            <label className="flex">
-              {" "}
-              <div>School Code </div>
-              <div className="pl-16">
-                <input
-                  checked={schoolCode == "ABCD1234"}
-                  type="checkbox"
-                  id="defaultcode"
-                  name="defaultcode"
-                  value="ABCD1234"
-                  onClick={()=>defaultSchoolCode()}
-                />
-                <label for="defaultcode"> Use Default Code</label>
-              </div>
-            </label>
-            <div className="flex justify-end items-center relative">
-              <input
-                value={schoolCode}
+                onChange={(e) => {
+                  setValues(e.target.value, "countrycode");
+                }}
+                value={countryCode}
                 type="text"
-                placeholder="Enter School Code"
-                className={`mt-2 h-12 w-full rounded-md ${
-                  schoolCode.length == 0
-                    ? "bg-gray-100"
-                    : codeList.includes(schoolCode)
-                    ? "bg-green-100"
-                    : "bg-red-100"
-                } px-3`}
-                onChange={(e) => setSchoolCode(e.target.value)}
+                placeholder="+91"
+                className={`mt-2 h-12 w-1/4 border-2 ${
+                  hasBlank
+                    ? countryCode.length === 0
+                      ? "border-red-500"
+                      : ""
+                    : ""
+                } rounded-md bg-gray-100 px-3`}
               />
-              {schoolCode == "ABCD1234" ? (
-                <span className="absolute mr-16 pt-2 text-sm text-gray-400">
-                  (default)
-                </span>
-              ) : (
-                ""
-              )}
-              {schoolCode.length === 0 ? (
-                ""
-              ) : codeList.includes(schoolCode) ? (
-                <img
-                  src="/check.png"
-                  className="absolute mr-2 w-10 pt-2"
-                  alt="Search Icon"
-                />
-              ) : (
-                <img
-                  src="/remove.png"
-                  className="absolute mr-2 w-10 pt-2"
-                  alt="Search Icon"
-                />
-              )}
-            </div>
-          </div>
-
-             <div>
-                  <label class=""> Grade Level </label>
-                  <select
-            
-                    placeholde
-                    name="gender"
-                    id="gender"
-                    class={`mt-2 h-12 w-full rounded-md bg-gray-100 px-3 text-gray-800  `}
-                  >
-                    <option
-                      value="default"
-                      disabled
-                      selected
-                      hidden
-                      className=""
-                    >
-                      Select Grade
-                    </option>
-                    <option
-                      class="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="Level 1"
-                    >
-                      LEVEL 1 | Grade 1-3
-                    </option>
-                    <option
-                      class="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="Level 2"
-                    >
-                      LEVEL 2 | Grade 4-6
-                    </option>
-                    <option
-                      class="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="Level 3"
-                    >
-                      LEVEL 3 | Grade 7-9
-                    </option>
-                  
-                  </select>
-                </div>
-        </div>
-
-        <div>
-          <label className=""> School Name </label>
-          <input
-            value={schoolCodeMap[schoolCode] ? schoolCodeMap[schoolCode] : ""}
-            type="text"
-            readOnly
-            className="mt-2 h-12 w-full rounded-md bg-gray-100 px-3"
-          />
-        </div>
-{/* 
-        <div>
-          <label className=""> Available Batch </label>
-          <div className="relative w-full mt-2 bg-gray-100 rounded-lg">
-            <input
-              className="peer hidden"
-              type="checkbox"
-              name="select-3"
-              id="select-3"
-            />
-            <label
-              for="select-3"
-              className="flex w-full h-12 cursor-pointer rounded-lg select-none border p-2 pt-3 px-3 text-sm text-gray-700 ring-blue-400 peer-checked:ring"
-            >
-              Select Batch{" "}
-            </label>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="pointer-events-none absolute right-5 top-3 h-4 text-gray-600 transition peer-checked:rotate-180"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M19 9l-7 7-7-7"
+              <input
+                onChange={(e) => {
+                  setValues(e.target.value, "mobile");
+                }}
+                value={mobile}
+                type="text"
+                placeholder="Your Number"
+                className={`mt-2 h-12 w-full border-2 ${
+                  !isMobileValid ? "border-red-500" : ""
+                } ${
+                  hasBlank ? (mobile.length === 0 ? "border-red-500" : "") : ""
+                } rounded-md bg-gray-100 px-3`}
               />
-            </svg>
-            <ul className="max-h-0 select-none flex-col overflow-hidden rounded-b-lg shadow-md transition-all duration-300 peer-checked:max-h-56 peer-checked:py-3">
-              <li className="cursor-pointer px-3 py-2 text-sm text-gray-500 hover:bg-blue-500 hover:text-white">
-                Batch 1 | Time: 1-3
-              </li>
-              <li className="cursor-pointer px-3 py-2 text-sm text-gray-500 hover:bg-blue-500 hover:text-white">
-                Batch 2 | Time: 4-6
-              </li>
-              <li className="cursor-pointer px-3 py-2 text-sm text-gray-500 hover:bg-blue-500 hover:text-white">
-                Batch 3 | Time: 7-9
-              </li>
-            </ul>
-          </div>
-        </div> */}
-
-<div>
-                  <label class=""> Available Batch </label>
-                  <select
-            
-                    placeholde
-                    name="gender"
-                    id="gender"
-                    class={`mt-2 h-12 w-full rounded-md bg-gray-100 px-3 text-gray-800  `}
-                  >
-                    <option
-                      value="default"
-                      disabled
-                      selected
-                      hidden
-                      className=""
-                    >
-                      Select Batch
-                    </option>
-                    <option
-                      class="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="Batch 1"
-                    >
-                      Batch 1 | Time: 1-3
-                    </option>
-                    <option
-                      class="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="Batch 2"
-                    >
-                      Batch 2 | Time: 4-6
-                    </option>
-                    <option
-                      class="text-lg text-gray-500 hover:bg-blue-500 hover:text-white"
-                      value="Batch 3"
-                    >
-                      Batch 3 | Time: 7-9
-                    </option>
-                  
-                  </select>
-                </div>
-
-        <div className="flex justify-between pt-4">
-          <div className="font-bold text-2xl">Price:</div>
-          <div className="flex space-x-2">
-            <div className="font-semibold text-2xl">
-              {codeList.includes(schoolCode) ? "₹ 3000" : "₹ 6000"}
             </div>
-            {codeList.includes(schoolCode) ? (
-              <>
-                <div className="mt-2 line-through text-sm text-gray-500">
-                  ₹ 6000
-                </div>
-                <div className="mt-1.5 text-green-600">50% off</div>
-              </>
-            ) : (
-              ""
+            {!isMobileValid && (
+              <p className="text-red-500">
+                Please enter a valid mobile number.
+              </p>
             )}
           </div>
         </div>
-
         <div>
-          <button
-            type="button"
-            className="mt-5 w-full rounded-md bg-blue-600 p-2 text-center font-semibold text-white"
+          <label className=""> Gender </label>
+          <select
+            onChange={(e) => {
+              setValues(e.target.value, "gender");
+            }}
+            value={gender}
+            className={`mt-2 h-12 w-full border-2 ${
+              hasBlank ? (gender.length === 0 ? "border-red-500" : "") : ""
+            } rounded-md bg-gray-100 px-3`}
           >
-            Make Payment
-          </button>
+            <option value="">Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
         </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <div>
+            <label className=""> School Code </label>
+            <input
+              onBlur={() => getSchoolCode()}
+              onChange={(e) => {
+                setValues(e.target.value, "schoolcode");
+              }}
+              value={schoolCode}
+              type="text"
+              placeholder="Enter your school code"
+              className={`mt-2 h-12 w-full border-2 ${
+                error ? "border-red-500" : ""
+              } ${
+                hasBlank
+                  ? schoolCode.length === 0
+                    ? "border-red-500"
+                    : ""
+                  : ""
+              } rounded-md bg-gray-100 px-3`}
+            />
+            {error && <p className="text-red-500">{error}</p>}
+          </div>
+          <div>
+            <label className=""> School Name </label>
+            <input
+              onChange={(e) => {
+                setValues(e.target.value, "schoolname");
+              }}
+              value={schoolName}
+              type="text"
+              placeholder="Your school name"
+              disabled
+              className={`mt-2 h-12 w-full border-2 ${
+                hasBlank
+                  ? schoolName.length === 0
+                    ? "border-red-500"
+                    : ""
+                  : ""
+              } rounded-md bg-gray-100 px-3`}
+            />
+          </div>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <div>
+            <label className=""> Level </label>
+            <select
+              onChange={(e) => {
+                setValues(e.target.value, "level");
+                getBatchId(e.target.value);
+              }}
+              value={level}
+              className={`mt-2 h-12 w-full border-2 text-black ${
+                hasBlank ? (level.length === 0 ? "border-red-500" : "") : ""
+              } rounded-md bg-gray-100 px-3`}
+            >
+              <option value="">Select Level</option>
+              {allLevels.map((level) => (
+                <option key={level._id} value={level._id}>
+                  {level.classes}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className=""> Batch ID </label>
+            <select
+              onChange={(e) => {
+                setValues(e.target.value, "batchId");
+              }}
+              value={batchId}
+              className={`mt-2 h-12 w-full border-2 text-black ${
+                hasBlank ? (batchId.length === 0 ? "border-red-500" : "") : ""
+              } rounded-md bg-gray-100 px-3`}
+            >
+              <option value="">Select Batch ID</option>
+              {batches.map((batch) => (
+                <option key={batch._id} value={batch._id}>
+                  {batch.batchName}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            checked={checkboxChecked}
+            onChange={() => setCheckboxChecked(!checkboxChecked)}
+            className={`h-4 w-4 border-2 ${hasBlank ? "border-red-500" : ""}`}
+          />
+          <label>I agree to the terms and conditions</label>
+        </div>
+
+        {hasBlank && (
+          <p className="text-red-500">Please fill in all required fields.</p>
+        )}
+
+        <button
+          type="submit"
+          className={`flex w-full justify-center rounded-md bg-purple-500 p-2 text-white ${
+            loading ? "cursor-not-allowed opacity-50" : ""
+          }`}
+          disabled={loading}
+        >
+          {loading ? "Registering..." : "Register"}
+        </button>
       </form>
+      <Popup
+        openPopup={openPopup}
+        handlePopupClose={handlePopupClose}
+        title="Student Registered"
+        message="Student has been successfully registered."
+      />
     </div>
   );
 };

@@ -338,9 +338,6 @@ const AdminBatchCreate = () => {
                 <div>
                   <label className=""> End Time </label>
                   <input
-                    // onChange={(e) => {
-                    //   setValues(e.target.value, "endtime");
-                    // }}
                     type="time"
                     id="appt"
                     name="appt"

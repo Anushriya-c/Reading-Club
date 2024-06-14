@@ -69,7 +69,7 @@ const AdminSchoolMng = () => {
   }, []);
 
   return (
-    <>
+    <div className="overflow-hidden">
       <Backdrop
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={loading}
@@ -83,8 +83,8 @@ const AdminSchoolMng = () => {
         <div className="w-full bg-gray-300">
           <BreadCrumb crumbData={[{ name: "School Management", path: null }]} />
           <div className="mx-auto max-w-screen-lg px-4 py-8 sm:px-8">
-            <div className="overflow-y-hidden rounded-lg border">
-              <div className="overflow-x-auto">
+            <div className="rounded-lg border">
+              <div className="overflow-hidden">
                 <table className="w-full">
                   <thead>
                     <tr className="bg-violet-600 text-left text-xs font-semibold uppercase tracking-widest text-white">
@@ -187,7 +187,7 @@ const AdminSchoolMng = () => {
           }
         />
       </div>
-    </>
+    </div>
   );
 };
 

@@ -465,7 +465,6 @@ const Table = () => {
   return (
     <div className="h-full bg-white flex  items-center justify-center rounded-lg">
       <div className="w-full max-w-5xl px-2">
-     
         <div className=" flex justify-end bg-[#222E3A]/[6%]  px-2  mt-2 py-2 border-2 border-b-0 border-black">
           <div className="px-2 bg-white py-3  rounded-lg">
             <div className="flex items-center gap-2">
@@ -771,7 +770,7 @@ const Table = () => {
               </li>
               {customPagination?.map((data, index) => (
                 <li
-                  className={`flex items-center justify-center w-[36px] rounded-[6px] h-[34px] border-[1px] border-solid border-[2px] bg-[#FFFFFF] cursor-pointer ${
+                  className={`flex items-center justify-center w-[36px] rounded-[6px] h-[34px] border-solid border-[2px] bg-[#FFFFFF] cursor-pointer ${
                     currentPage == index
                       ? "text-blue-600  border-sky-500"
                       : "border-[#E4E4EB] "

@@ -11,7 +11,7 @@ function StudentBatch() {
   const getAllBatch = async () => {
     // setLoading(true);
     const res = await instance({
-      url: `batch/allActive`,
+      url: `batch/byUser`,
       method: "GET",
       headers: {
         Authorization: Cookies.get("token"),
@@ -25,7 +25,7 @@ function StudentBatch() {
     getAllBatch();
   }, []);
   return (
-    <div>
+    <div className="overflow-hidden">
       <Header highlight={"studpanel"} />
       <BreadCrumb crumbData={[{ name: "StudentPanel ", path: null }]} />
       <section class="py-6 sm:py-8 lg:py-12">
@@ -49,7 +49,7 @@ function StudentBatch() {
                     {`Total Students: ${ele.maximumStudents}`}
                   </h1>
                   <Link
-                    to="/studentsession"
+                    to={`/studentsession/${ele._id}`}
                     class="absolute bottom-0 right-0 flex h-12 w-12 items-center justify-center bg-violet-500 text-white transition-all hover:w-16"
                   >
                     <svg

@@ -51,10 +51,10 @@ const AdminSchoolReg = () => {
       if (res.data.data.schoolName) {
         setStatus("School already exists.");
       } else {
-        setStatus("");
+        setStatus("Valid Code");
       }
     } catch (e) {
-      setStatus("");
+      setStatus("Valid Code");
     }
     // setExistingSchoolCodes(res.data.data);
     // setSchoolCode(res.data.data);
@@ -159,11 +159,9 @@ const AdminSchoolReg = () => {
     }
     setLoading(false);
   };
-  useEffect(() => {
-    // getSchoolCode();
-  }, [schoolCode]);
+  useEffect(() => {}, [schoolCode]);
   return (
-    <div className="relative ">
+    <div className="relative overflow-hidden ">
       <Backdrop
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={loading}
